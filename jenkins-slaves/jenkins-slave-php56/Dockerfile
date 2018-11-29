@@ -1,13 +1,13 @@
 FROM openshift/jenkins-slave-base-centos7
 
-# This image provides an Apache+PHP environment for running PHP
+# This image provides an Apache+PHP+Composer environment for running PHP
 # applications.
 
 EXPOSE 8080
 EXPOSE 8443
 
 # Description
-# This image provides an Apache 2.4 + PHP 5.6 environment for running PHP applications.
+# This image provides an Apache 2.4 + PHP 5.6 + Composer environment for running PHP applications.
 # Exposed ports:
 # * 8080 - alternative port for http
 
@@ -48,7 +48,10 @@ RUN yum install -y centos-release-scl && \
                   rh-php56-php-pecl-xdebug rh-php56-php-gmp httpd24-mod_ssl" && \
     yum install -y --setopt=tsflags=nodocs --enablerepo=centosplus $INSTALL_PKGS && \
     rpm -V $INSTALL_PKGS && \
-    yum clean all -y
+    yum clean all -y && \
+    curl -o ./composer-installer https://getcomposer.org/installer && \
+    php <./composer-installer && \
+    rm ./composer-installer
 
 ENV PHP_CONTAINER_SCRIPTS_PATH=/usr/share/container-scripts/php/ \
     APP_ROOT=/opt/app-root \
@@ -65,9 +68,6 @@ ENV PHP_CONTAINER_SCRIPTS_PATH=/usr/share/container-scripts/php/ \
     HTTPD_VAR_PATH=/opt/rh/httpd24/root/var \
     SCL_ENABLED=rh-php56
 
-# Copy the S2I scripts from the specific language image to $STI_SCRIPTS_PATH
-COPY ./s2i/bin/ $STI_SCRIPTS_PATH
-
 # Copy extra files to the image.
 COPY ./root/ /
 
@@ -75,6 +75,3 @@ COPY ./root/ /
 RUN /usr/libexec/container-setup && /usr/libexec/rpm-file-permissions
 
 USER 1001
-
-# Set the default CMD to print the usage of the language image
-CMD $STI_SCRIPTS_PATH/usage
