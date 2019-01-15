@@ -24,3 +24,6 @@ RUN yum install -y centos-release-scl-rh && \
     rm -rf /var/cache/yum
 
 USER 1001
+
+RUN git config --global user.name "jenkins-ci" && \
+    git config --global user.email "jenkins@labs-enablement.com"
